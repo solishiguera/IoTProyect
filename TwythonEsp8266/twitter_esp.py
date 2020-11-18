@@ -1,37 +1,48 @@
-""" Tweet my room temperature"""
+# Diego was here :)  
+
 from twython import Twython
+from firebase import firebase
+import time
 
-# This is where I stored my Consumer API keys and Access Tokens
-from my_keys import (
-    consumer_key,
-    consumer_secret,
-    access_token,
-    access_secret
-)
+def tweetStuff(twitter, firebase): 
+    """This function will tweet my room's temperature"""
+    cycles = 0
+    while cycles < 10:
+        # Gets data from DB attribute
+        result = firebase.get('Var','')
+        print("Fetched data: ", result)
+        anterior = result
 
-twitter = Twython(
-    consumer_key,
-    consumer_secret,
-    access_token,
-    access_secret
-)
+        # Prevents status duplicates (error 403)
+        if result == anterior: 
+            result += 0.1 
 
-# This will tweet the phrase 'Hello world!'
-message = "Hello world!"
-twitter.update_status(status=message)
-print("Tweeted %s", message)
+        # Tweets message
+        message = "Diego's room temperature is " + str(result) + "°C"
+        twitter.update_status(status = message)
+        print("Tweeted %s", message)
 
-# This will tweet three words in separate tweets
-message = ["lol", "lmao", "ola"]
-for i in range(len(message)):
-    twitter.update_status(status=message[i])
-    print("Tweeted %s", message)
+        anterior = result
+        cycles += 1
+        time.sleep(180)
 
-# This will tweet an image
-message = "me"
-# IMG_3390.jpg is the name of my image
-image = open('IMG_3390.jpg', 'rb')
-response = twitter.upload_media(media=image)
-media_id = [response['media_id']]
-twitter.update_status(status=message, media_ids=media_id)
-print("Tweeted %s", message)
+
+def main():
+    my_firebase = firebase.FirebaseApplication("https://XXXXXXXXXX.firebaseio.com/")
+
+    # Consumer API keys and Access Tokens
+    from my_keys import (
+        consumer_key,
+        consumer_secret,
+        access_token,
+        access_secret
+    )
+
+    twitter = Twython(
+        consumer_key,
+        consumer_secret,
+        access_token,
+        access_secret
+    )
+
+    tweetStuff(twitter, my_firebase)
